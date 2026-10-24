@@ -22,8 +22,9 @@ services:
         sync: false
       - key: JWT_SECRET
         generateValue: true
-      - key: FRONTEND_ORIGIN # the Vercel URL, e.g. https://hcm-lite.vercel.app (comma-separate several)
-        sync: false
+      # Origins allowed by CORS: the Vercel site, plus the local dev server. Comma-separated, no trailing slash.
+      - key: FRONTEND_ORIGIN
+        value: https://smit-hackathon-coral.vercel.app,http://localhost:5173
       - key: GROQ_API_KEY
         sync: false
       - key: GROQ_MODEL

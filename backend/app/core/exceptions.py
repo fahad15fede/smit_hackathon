@@ -32,6 +32,10 @@ class BusinessRuleError(AppError):
     status_code = 422
 
 
+class RateLimitedError(AppError):
+    status_code = 429
+
+
 class DatabaseUnavailableError(AppError):
     """Supabase could not be reached or is misconfigured (bad key, missing tables)."""
 

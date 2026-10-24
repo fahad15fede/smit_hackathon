@@ -12,12 +12,15 @@ interface FieldProps {
   error?: string;
   hint?: string;
   className?: string;
+  /** Render a <div> instead of a <label>; needed when the field contains buttons. */
+  group?: boolean;
   children: ReactNode;
 }
 
-export function Field({ label, error, hint, className, children }: FieldProps) {
+export function Field({ label, error, hint, className, group = false, children }: FieldProps) {
+  const Wrapper = group ? 'div' : 'label';
   return (
-    <label className={cn('block', className)}>
+    <Wrapper className={cn('block', className)}>
       <span className="mb-1.5 block text-sm font-medium text-slate-700">{label}</span>
       {children}
       {error ? (
@@ -25,7 +28,7 @@ export function Field({ label, error, hint, className, children }: FieldProps) {
       ) : (
         hint && <span className="mt-1.5 block text-xs text-slate-500">{hint}</span>
       )}
-    </label>
+    </Wrapper>
   );
 }
 

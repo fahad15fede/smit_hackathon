@@ -1,3 +1,4 @@
+import { Minus, Plus } from 'lucide-react';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
@@ -8,9 +9,12 @@ import { Checkbox, Field, FormError, Input, Select } from '@/components/ui/form'
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/toast';
 import { useCurrentUser } from '@/features/auth/auth-context';
-import { toIsoDate } from '@/lib/format';
+import { formatMoney, toIsoDate } from '@/lib/format';
 import { ROLE_LABELS } from '@/lib/roles';
 import type { Employee, Role } from '@/types/api';
+
+/** Amount the salary +/- buttons change the salary by, in PKR. */
+const SALARY_STEP = 5000;
 
 interface EmployeeForm {
   full_name: string;
@@ -65,7 +69,15 @@ export function EmployeeFormModal({ open, onClose, employee }: EmployeeFormModal
   const createEmployee = useCreateEmployee();
   const updateEmployee = useUpdateEmployee();
   const mutation = employee ? updateEmployee : createEmployee;
-  const { register, handleSubmit, reset, formState } = useForm<EmployeeForm>({ defaultValues: emptyForm() });
+  const { register, handleSubmit, reset, formState, getValues, setValue, watch } = useForm<EmployeeForm>({
+    defaultValues: emptyForm(),
+  });
+  const salary = Number(watch('monthly_salary')) || 0;
+
+  const changeSalary = (delta: number) => {
+    const next = Math.max(0, (Number(getValues('monthly_salary')) || 0) + delta);
+    setValue('monthly_salary', String(next), { shouldDirty: true, shouldValidate: true });
+  };
   const { errors } = formState;
   const isSelf = employee?.id === user.employee.id;
 
@@ -144,8 +156,39 @@ export function EmployeeFormModal({ open, onClose, employee }: EmployeeFormModal
             ))}
           </Select>
         </Field>
-        <Field label="Monthly salary (PKR)" error={errors.monthly_salary && 'Enter a salary of 0 or more'}>
-          <Input type="number" min={0} step="0.01" {...register('monthly_salary', { required: true, min: 0 })} />
+        <Field
+          group
+          label="Monthly salary (PKR)"
+          error={errors.monthly_salary && 'Enter a salary of 0 or more'}
+          hint={`${formatMoney(salary)} · buttons change it by ${formatMoney(SALARY_STEP)}`}
+        >
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              size="icon"
+              icon={Minus}
+              className="h-10 w-10"
+              aria-label={`Decrease salary by ${SALARY_STEP}`}
+              disabled={salary <= 0}
+              onClick={() => changeSalary(-SALARY_STEP)}
+            />
+            <Input
+              type="number"
+              min={0}
+              step="0.01"
+              aria-label="Monthly salary (PKR)"
+              className="text-center tabular-nums"
+              {...register('monthly_salary', { required: true, min: 0 })}
+            />
+            <Button
+              variant="secondary"
+              size="icon"
+              icon={Plus}
+              className="h-10 w-10"
+              aria-label={`Increase salary by ${SALARY_STEP}`}
+              onClick={() => changeSalary(SALARY_STEP)}
+            />
+          </div>
         </Field>
         <Field label="Phone">
           <Input type="tel" {...register('phone')} />

@@ -1,4 +1,4 @@
-import { ArrowRight, CalendarDays, ClipboardCheck, Clock, Plane, ReceiptText, UserCheck, Users, UserX } from 'lucide-react';
+import { ArrowRight, CalendarDays, ClipboardCheck, Clock, Percent, Plane, ReceiptText, UserCheck, Users, UserX } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 import { useOrganizationDashboard, usePersonalDashboard } from '@/api/insights';
@@ -12,6 +12,7 @@ import { LeaveBalanceList } from '@/features/leave/LeaveBalanceList';
 import { formatDate, formatDateRange, formatMoney, formatMonth, parseDate, toIsoDate } from '@/lib/format';
 import { isManager } from '@/lib/roles';
 import { AttendanceTrendChart } from './AttendanceTrendChart';
+import { DashboardSummaryCard } from './DashboardSummaryCard';
 
 function greeting() {
   const hour = new Date().getHours();
@@ -27,7 +28,7 @@ function OrganizationDashboardView() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 xl:grid-cols-6">
         <StatCard label="Active employees" value={data.headcount} icon={Users} tone="slate" />
         <StatCard label="On time" value={data.present} icon={UserCheck} tone="brand" />
         <StatCard label="Late" value={data.late} icon={Clock} tone="amber" />
@@ -39,7 +40,16 @@ function OrganizationDashboardView() {
           tone="rose"
           hint={data.is_working_day ? undefined : 'Non-working day'}
         />
+        <StatCard
+          label="Attendance rate"
+          value={data.month_attendance_rate === null ? '—' : `${data.month_attendance_rate}%`}
+          icon={Percent}
+          tone="violet"
+          hint="This month to date"
+        />
       </div>
+
+      <DashboardSummaryCard />
 
       <div className="grid gap-6 xl:grid-cols-5">
         <Card className="xl:col-span-3">

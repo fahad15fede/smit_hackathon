@@ -3,10 +3,12 @@ from datetime import date, datetime, timedelta
 from supabase import Client
 
 from ..core.exceptions import BusinessRuleError, ConflictError
-from ..models import Attendance, AttendanceStatus, User
+from ..models import Attendance, AttendanceStatus, Employee, User
 from ..repositories import attendance as attendance_repo
+from ..repositories import people as people_repo
+from ..schemas.attendance import AttendanceSummary
 from . import audit
-from .calendar import WorkCalendar, company_now
+from .calendar import WorkCalendar, company_now, company_today
 from .company import get_company
 
 
@@ -48,3 +50,42 @@ def list_records(
     db: Client, *, employee_id: int | None = None, start: date | None = None, end: date | None = None
 ) -> list[Attendance]:
     return attendance_repo.list_records(db, employee_id=employee_id, start=start, end=end)
+
+
+def summary(db: Client, start: date, end: date, *, employee_id: int | None = None) -> AttendanceSummary:
+    """Attendance totals for the organization, or for one employee when ``employee_id`` is given.
+
+    Days after today are ignored, so a month-to-date rate is not diluted by future days.
+    """
+    company = get_company(db)
+    end = min(end, company_today(company))
+    working_days = WorkCalendar(db, company, start, end).working_days(start, end) if start <= end else []
+    rows = [
+        row
+        for row in attendance_repo.days_between(db, start, end)
+        if employee_id is None or row["employee_id"] == employee_id
+    ]
+    headcount = 1 if employee_id is not None else people_repo.count_active(db)
+    late = sum(row["status"] is AttendanceStatus.LATE for row in rows)
+    expected = headcount * len(working_days)
+    return AttendanceSummary(
+        start_date=start,
+        end_date=end,
+        working_days=len(working_days),
+        headcount=headcount,
+        check_ins=len(rows),
+        on_time=len(rows) - late,
+        late=late,
+        attendance_rate=round(100 * len(rows) / expected, 1) if expected else None,
+    )
+
+
+def late_ranking(db: Client, start: date, end: date) -> list[tuple[Employee, int]]:
+    """Employees ordered by number of late check-ins in the range (most first)."""
+    counts: dict[int, int] = {}
+    for row in attendance_repo.days_between(db, start, end):
+        if row["status"] is AttendanceStatus.LATE:
+            counts[row["employee_id"]] = counts.get(row["employee_id"], 0) + 1
+    employees = {employee.id: employee for employee in people_repo.list_employees(db)}
+    ranking = [(employees[employee_id], count) for employee_id, count in counts.items() if employee_id in employees]
+    return sorted(ranking, key=lambda item: (-item[1], item[0].full_name))

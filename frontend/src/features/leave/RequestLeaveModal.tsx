@@ -1,12 +1,14 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 
 import { useRequestLeave } from '@/api/leaves';
+import { AiBadge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Field, FormError, Input, Select, Textarea } from '@/components/ui/form';
 import { Modal } from '@/components/ui/Modal';
 import { useToast } from '@/components/ui/toast';
 import { toIsoDate } from '@/lib/format';
-import type { LeaveBalance } from '@/types/api';
+import type { LeaveBalance, LeaveDraft } from '@/types/api';
 
 interface LeaveForm {
   leave_type_id: string;
@@ -15,13 +17,35 @@ interface LeaveForm {
   reason: string;
 }
 
-export function RequestLeaveModal({ open, onClose, balances }: { open: boolean; onClose: () => void; balances: LeaveBalance[] }) {
+interface RequestLeaveModalProps {
+  open: boolean;
+  onClose: () => void;
+  balances: LeaveBalance[];
+  /** An AI-parsed draft to pre-fill. The user still reviews and submits it themselves. */
+  draft?: LeaveDraft | null;
+}
+
+const emptyForm = (): LeaveForm => ({
+  leave_type_id: '',
+  start_date: toIsoDate(new Date()),
+  end_date: toIsoDate(new Date()),
+  reason: '',
+});
+
+export function RequestLeaveModal({ open, onClose, balances, draft }: RequestLeaveModalProps) {
   const toast = useToast();
   const requestLeave = useRequestLeave();
-  const { register, handleSubmit, reset, watch, formState } = useForm<LeaveForm>({
-    defaultValues: { start_date: toIsoDate(new Date()), end_date: toIsoDate(new Date()) },
-  });
+  const { register, handleSubmit, reset, watch, formState } = useForm<LeaveForm>({ defaultValues: emptyForm() });
   const startDate = watch('start_date');
+
+  useEffect(() => {
+    if (!open) return;
+    reset(
+      draft
+        ? { leave_type_id: String(draft.leave_type_id), start_date: draft.start_date, end_date: draft.end_date, reason: draft.reason }
+        : emptyForm(),
+    );
+  }, [open, draft, reset]);
 
   const close = () => {
     reset();
@@ -59,9 +83,15 @@ export function RequestLeaveModal({ open, onClose, balances }: { open: boolean; 
       }
     >
       <form id="leave-form" onSubmit={onSubmit} className="space-y-4">
+        {draft && (
+          <div className="flex items-center justify-between gap-3 rounded-lg bg-violet-50/60 px-3 py-2 text-sm text-violet-900 ring-1 ring-violet-200">
+            Pre-filled from your description. Check it before submitting.
+            <AiBadge />
+          </div>
+        )}
         <FormError message={requestLeave.error?.message} />
         <Field label="Leave type" error={formState.errors.leave_type_id && 'Choose a leave type'}>
-          <Select {...register('leave_type_id', { required: true })} defaultValue="">
+          <Select {...register('leave_type_id', { required: true })}>
             <option value="" disabled>
               Choose a leave type
             </option>

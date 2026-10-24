@@ -52,8 +52,16 @@ class Settings(BaseSettings):
     # Comma-separated list of origins allowed to call the API.
     frontend_origin: str = "http://localhost:5173"
 
-    gemini_api_key: str | None = None
-    gemini_model: str = "gemini-2.5-flash"
+    # Hosted LLM for the assistant: Groq (OpenAI-compatible API). Backend-only; the browser never sees it.
+    ai_api_key: str | None = Field(default=None, validation_alias=AliasChoices("AI_API_KEY", "GROQ_API_KEY"))
+    ai_model: str = Field(default="openai/gpt-oss-120b", validation_alias=AliasChoices("AI_MODEL", "GROQ_MODEL"))
+    ai_base_url: str = "https://api.groq.com/openai/v1"
+    # Cap per model reply. For reasoning models it covers hidden reasoning plus the answer.
+    ai_max_output_tokens: int = 1500
+    # Reasoning models only (openai/gpt-oss-*): "low" keeps answers fast and leaves room for the reply.
+    ai_reasoning_effort: Literal["low", "medium", "high"] = "low"
+    ai_timeout_seconds: float = 15
+    ai_requests_per_hour: int = 20
 
     @field_validator("supabase_url")
     @classmethod

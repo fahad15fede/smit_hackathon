@@ -1,10 +1,11 @@
 import os
 
 # Tests never talk to real services: backend/.env is ignored, get_db is overridden with an
-# in-memory fake, and no Gemini key is configured so the assistant uses its rule-based answers.
+# in-memory fake, and no AI key is configured unless a test installs a scripted LLM.
 os.environ["SUPABASE_URL"] = "https://test-project.supabase.co"
 os.environ["SUPABASE_SECRET_KEY"] = "sb_secret_test"
-os.environ.pop("GEMINI_API_KEY", None)
+for name in ("AI_API_KEY", "GROQ_API_KEY"):
+    os.environ.pop(name, None)
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402

@@ -35,9 +35,9 @@ FOREIGN_KEYS = {
     ("employees", "department_id"), ("users", "employee_id"), ("attendance", "employee_id"),
     ("leave_requests", "employee_id"), ("leave_requests", "leave_type_id"), ("leave_requests", "reviewed_by_id"),
     ("payroll_runs", "created_by_id"), ("payslips", "payroll_run_id"), ("payslips", "employee_id"),
-    ("audit_logs", "actor_id"),
+    ("audit_logs", "actor_id"), ("ai_logs", "user_id"),
 }
-TIMESTAMPED = {"companies", "employees", "users", "leave_requests", "payroll_runs", "audit_logs"}
+TIMESTAMPED = {"companies", "employees", "users", "leave_requests", "payroll_runs", "audit_logs", "ai_logs"}
 
 
 @dataclass

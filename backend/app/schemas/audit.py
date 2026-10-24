@@ -1,7 +1,5 @@
 from datetime import datetime
 
-from pydantic import BaseModel, Field
-
 from .common import ORMModel
 
 
@@ -16,12 +14,3 @@ class AuditLogOut(ORMModel):
     detail: str
     created_at: datetime
     actor: AuditActor | None
-
-
-class AskRequest(BaseModel):
-    question: str = Field(min_length=2, max_length=500)
-
-
-class AskResponse(BaseModel):
-    answer: str
-    source: str

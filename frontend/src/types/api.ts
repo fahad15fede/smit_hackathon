@@ -170,6 +170,7 @@ export interface OrganizationDashboard {
   on_leave: number;
   absent: number;
   pending_leaves: number;
+  month_attendance_rate: number | null;
   trend: TrendPoint[];
   recent_pending: LeaveRequest[];
 }
@@ -191,7 +192,35 @@ export interface AuditEntry {
   actor: { id: number; email: string } | null;
 }
 
-export interface AssistantAnswer {
+export interface ChatTurn {
+  role: 'user' | 'assistant';
+  text: string;
+}
+
+export interface ChatResponse {
   answer: string;
-  source: 'gemini' | 'rules';
+  ai_generated: boolean;
+  /** "quick_reply" answers (greetings, help, navigation) never reach the AI model. */
+  source: 'ai' | 'quick_reply' | 'fallback';
+  tools_used: string[];
+}
+
+export interface DashboardSummary {
+  bullets: string[];
+  ai_generated: boolean;
+  message: string | null;
+}
+
+export interface LeaveDraft {
+  leave_type_id: number;
+  leave_type_name: string;
+  start_date: string;
+  end_date: string;
+  reason: string;
+}
+
+export interface LeaveDraftResponse {
+  draft: LeaveDraft | null;
+  ai_generated: boolean;
+  message: string | null;
 }

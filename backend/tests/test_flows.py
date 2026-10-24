@@ -113,7 +113,7 @@ def test_payroll_draft_finalize_and_payslip_visibility(client, admin_token):
     assert len(client.get("/api/payslips/me", headers=auth(employee)).json()) == 1
 
 
-def test_dashboard_and_assistant(client, admin_token):
+def test_dashboard(client, admin_token):
     employee = create_user(client, admin_token, "emp@acme.io")
     client.post("/api/attendance/check-in", headers=auth(employee))
 
@@ -122,7 +122,4 @@ def test_dashboard_and_assistant(client, admin_token):
     assert stats["present"] + stats["late"] == 1
     assert len(stats["trend"]) == 14
 
-    answer = client.post("/api/assistant/ask", headers=auth(admin_token), json={"question": "Who is on leave today?"})
-    assert answer.json() == {"answer": "Nobody is on approved leave today.", "source": "rules"}
-    actions = [entry["action"] for entry in client.get("/api/audit", headers=auth(admin_token)).json()]
-    assert "assistant.question" in actions
+    assert stats["month_attendance_rate"] is not None

@@ -1,7 +1,7 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 
 import { http } from '@/lib/http';
-import type { AssistantAnswer, AuditEntry, OrganizationDashboard, PersonalDashboard } from '@/types/api';
+import type { AuditEntry, OrganizationDashboard, PersonalDashboard } from '@/types/api';
 import { queryKeys } from './keys';
 
 export const useOrganizationDashboard = () =>
@@ -15,6 +15,3 @@ export const usePersonalDashboard = () =>
 
 export const useAuditLog = () =>
   useQuery({ queryKey: queryKeys.audit, queryFn: () => http.get<AuditEntry[]>('/audit?limit=200') });
-
-export const useAskAssistant = () =>
-  useMutation({ mutationFn: (question: string) => http.post<AssistantAnswer>('/assistant/ask', { question }) });

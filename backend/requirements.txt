@@ -6,7 +6,6 @@ email-validator>=2.2
 PyJWT>=2.9
 bcrypt>=4.2
 tzdata>=2024.1
-google-genai>=1.0
 
 # Development
 pytest>=8.0

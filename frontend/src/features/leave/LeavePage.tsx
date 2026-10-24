@@ -10,12 +10,15 @@ import { PageHeader } from '@/components/ui/display';
 import { EmptyState, ErrorState, SectionLoader } from '@/components/ui/feedback';
 import { useToast } from '@/components/ui/toast';
 import { formatDateRange } from '@/lib/format';
+import type { LeaveDraft } from '@/types/api';
 import { LeaveBalanceList } from './LeaveBalanceList';
 import { RequestLeaveModal } from './RequestLeaveModal';
+import { SmartLeaveInput } from './SmartLeaveInput';
 
 export function LeavePage() {
   const toast = useToast();
   const [requestOpen, setRequestOpen] = useState(false);
+  const [draft, setDraft] = useState<LeaveDraft | null>(null);
   const balances = useLeaveBalances();
   const leaves = useMyLeaves();
   const cancelLeave = useCancelLeave();
@@ -29,12 +32,32 @@ export function LeavePage() {
         title="Leave"
         description="Track your balance and request time off."
         actions={
-          <Button icon={Plus} onClick={() => setRequestOpen(true)} disabled={!balances.data?.length}>
+          <Button
+            icon={Plus}
+            onClick={() => {
+              setDraft(null);
+              setRequestOpen(true);
+            }}
+            disabled={!balances.data?.length}
+          >
             Request leave
           </Button>
         }
       />
       <div className="space-y-6">
+        <Card>
+          <CardHeader title="Describe your leave" description="Write it in your own words; we'll fill in the form for you to review." />
+          <CardBody>
+            <SmartLeaveInput
+              disabled={!balances.data?.length}
+              onDraft={(parsed) => {
+                setDraft(parsed);
+                setRequestOpen(true);
+              }}
+            />
+          </CardBody>
+        </Card>
+
         <Card>
           <CardHeader title="Balances" description="Remaining days for this year, including pending requests" />
           <CardBody>
@@ -96,7 +119,12 @@ export function LeavePage() {
           )}
         </Card>
       </div>
-      <RequestLeaveModal open={requestOpen} onClose={() => setRequestOpen(false)} balances={balances.data ?? []} />
+      <RequestLeaveModal
+        open={requestOpen}
+        onClose={() => setRequestOpen(false)}
+        balances={balances.data ?? []}
+        draft={draft}
+      />
     </>
   );
 }

@@ -48,6 +48,7 @@ def organization(db: Client) -> OrganizationDashboard:
         on_leave=on_leave,
         absent=max(0, headcount - present - late - on_leave) if is_working_day else 0,
         pending_leaves=len(pending),
+        month_attendance_rate=attendance.summary(db, today.replace(day=1), today).attendance_rate,
         trend=trend,
         recent_pending=[LeaveOut.model_validate(item) for item in pending[:5]],
     )

@@ -1,3 +1,4 @@
+import { Sparkles } from 'lucide-react';
 import type { ReactNode } from 'react';
 
 import { cn } from '@/lib/cn';
@@ -41,4 +42,14 @@ const STATUS_TONES: Record<LeaveStatus | AttendanceStatus | PayrollStatus | Role
 
 export function StatusBadge({ status }: { status: keyof typeof STATUS_TONES }) {
   return <Badge tone={STATUS_TONES[status]}>{status === 'hr' ? 'HR' : titleCase(status)}</Badge>;
+}
+
+/** Required on every answer produced by the AI model. */
+export function AiBadge() {
+  return (
+    <span className="inline-flex items-center gap-1 rounded-md bg-violet-50 px-1.5 py-0.5 text-[11px] font-medium text-violet-700 ring-1 ring-violet-600/20 ring-inset">
+      <Sparkles className="size-3" aria-hidden />
+      AI-generated
+    </span>
+  );
 }

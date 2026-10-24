@@ -22,6 +22,7 @@ class OrganizationDashboard(BaseModel):
     on_leave: int
     absent: int
     pending_leaves: int
+    month_attendance_rate: float | None
     trend: list[AttendanceTrendPoint]
     recent_pending: list[LeaveOut]
 

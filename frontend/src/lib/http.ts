@@ -1,4 +1,10 @@
-const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:8000/api';
+/** Accepts the backend origin with or without "/api" and trailing slashes, e.g. "https://x.onrender.com/". */
+function apiBaseUrl(configured: string | undefined): string {
+  const base = (configured?.trim() || 'http://localhost:8000/api').replace(/\/+$/, '');
+  return base.endsWith('/api') ? base : `${base}/api`;
+}
+
+const API_URL = apiBaseUrl(import.meta.env.VITE_API_URL as string | undefined);
 const TOKEN_KEY = 'hcm.token';
 
 export class ApiError extends Error {
